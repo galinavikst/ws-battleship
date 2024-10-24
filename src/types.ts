@@ -1,3 +1,9 @@
+import WebSocket from "ws";
+
+export interface ExtendedWebSocket extends WebSocket {
+  playerName?: string;
+}
+
 interface IRegIncomingData {
   name: string;
   password: string;
@@ -15,9 +21,31 @@ export interface IRegIncoming {
   type: string;
   data: IRegIncomingData;
 }
+export interface ICreateRoomIncoming {
+  id: number;
+  type: string;
+  data: string;
+}
 
 export interface IRegOucoming {
   type: string;
   data: IRegOutcomingData;
   id: number;
+}
+
+export interface IRoom {
+  roomId: number | string;
+  roomUsers: [
+    {
+      name: string;
+      index: number | string;
+    }
+  ];
+}
+
+export interface IPlayer {
+  name: string;
+  id: string;
+  password: string;
+  wins: number;
 }
