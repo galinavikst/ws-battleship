@@ -2,8 +2,10 @@ import WebSocket from "ws";
 import crypto from "node:crypto";
 import { IClientWebSocket } from "../../../types.ts";
 import playersDB from "../../db/players.ts";
-import { updateRoomForAllClients } from "../../messageSender/room.ts";
-import { updateWinnersForAllClients } from "../../messageSender/player.ts";
+import {
+  updateRoomForAllClients,
+  updateWinnersForAllClients,
+} from "../../messageSender";
 
 export const handleLogin = (
   ws: IClientWebSocket,

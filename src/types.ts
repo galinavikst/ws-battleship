@@ -34,14 +34,26 @@ export interface IRegOucoming {
   id: number;
 }
 
+interface IPosition {
+  x: number;
+  y: number;
+}
+export interface IShips {
+  position: IPosition;
+  direction: boolean;
+  length: number;
+  type: string; // "small"|"medium"|"large"|"huge",
+}
+
+export interface IRoomUser {
+  name: string;
+  index: string;
+  ships?: IShips[];
+}
 export interface IRoom {
   roomId: number | string;
-  roomUsers: [
-    {
-      name: string;
-      index: number | string;
-    }
-  ];
+  idGame?: string;
+  roomUsers: IRoomUser[];
 }
 
 export interface IPlayer {
