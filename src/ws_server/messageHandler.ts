@@ -1,8 +1,7 @@
-import WebSocket, { WebSocketServer } from "ws";
-
-import { IRegIncoming, ICreateRoomIncoming } from "../types.ts";
-import { handleLogin } from "./controlers/playerController.ts";
-import { handleCreateRoom } from "./controlers/roomController.ts";
+import WebSocket from "ws";
+import { handleLogin } from "./controlers/player/login.ts";
+import { handleCreateRoom } from "./controlers/room.ts";
+import { handleAddPlayerToRoom } from "./controlers/player/player.ts";
 
 const messageHandler = (
   messageType: string,
@@ -20,8 +19,7 @@ const messageHandler = (
       break;
 
     case "add_user_to_room":
-      console.log("add_user_to_room", notParsedMessageData);
-
+      handleAddPlayerToRoom(ws, notParsedMessageData, wss);
       break;
 
     case "add_ships":

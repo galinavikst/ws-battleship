@@ -1,6 +1,6 @@
-import { IPlayer, IRoom } from "./types";
-import { playersDB } from "./ws_server/db/players";
-import { roomsDB } from "./ws_server/db/rooms";
+import { IRoom } from "./types";
+import playersDB from "./ws_server/db/players";
+import roomsDB from "./ws_server/db/rooms";
 
 export const getRoomsWithOnePlayer = () =>
   Object.keys(roomsDB).reduce<IRoom[]>((acc, key) => {

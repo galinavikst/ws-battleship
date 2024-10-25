@@ -1,14 +1,12 @@
 import WebSocket from "ws";
 import crypto from "node:crypto";
-import { ExtendedWebSocket, ICreateRoomIncoming } from "../../types";
-import { roomsDB } from "../db/rooms";
-import { getRoomsWithOnePlayer } from "../../utils";
-import { playersDB } from "../db/players";
-import { updateRoomForAllClients } from "../models/roomModel";
-import { updateWinnersForAllClients } from "../models/playerModel";
+import { IClientWebSocket } from "../../types";
+import roomsDB from "../db/rooms";
+import { updateRoomForAllClients } from "../messageSender/room";
+import { updateWinnersForAllClients } from "../messageSender/player";
 
-export const handleCreateRoom = async (
-  ws: ExtendedWebSocket,
+export const handleCreateRoom = (
+  ws: IClientWebSocket,
   wss: WebSocket.Server
 ) => {
   // add new room to db and add user there

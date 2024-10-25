@@ -1,7 +1,8 @@
 import WebSocket from "ws";
 
-export interface ExtendedWebSocket extends WebSocket {
+export interface IClientWebSocket extends WebSocket {
   playerName?: string;
+  playerId?: string;
 }
 
 interface IRegIncomingData {

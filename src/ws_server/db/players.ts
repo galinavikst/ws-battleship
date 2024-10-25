@@ -1,1 +1,2 @@
-export const playersDB = {};
+const playersDB = {};
+export default playersDB;

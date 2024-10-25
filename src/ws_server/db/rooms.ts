@@ -1,1 +1,2 @@
-export const roomsDB = {};
+const roomsDB = {};
+export default roomsDB;
