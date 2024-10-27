@@ -14,7 +14,7 @@ export const handleLogin = (
 ) => {
   try {
     const { name, password } = JSON.parse(notParsedMessageData);
-    const partial = { index: 0, name: name };
+    const partial = { index: crypto.randomUUID(), name: name };
     const typeAndId = { id: 0, type: "reg" };
 
     // User data validation

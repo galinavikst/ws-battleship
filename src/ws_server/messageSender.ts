@@ -2,6 +2,7 @@ import WebSocket from "ws";
 import { getRoomsWithOnePlayer, getWinners } from "../utils";
 import roomsDB from "./db/rooms";
 import { IClientWebSocket, IRoom } from "../types";
+import playersDB from "./db/players";
 
 export const updateRoomForAllClients = (wss: WebSocket.Server) => {
   const roomsWithOnePlayer = getRoomsWithOnePlayer();
@@ -61,7 +62,24 @@ export const createGame = (indexRoom: string, wss: WebSocket.Server) => {
   });
 };
 
-// send to all players in the room
+// after game start and every attack, miss or kill result
+// send to both players in the room
+const turn = (client: IClientWebSocket, currentPlayerId: string) => {
+  console.log("turn", client.playerId);
+  console.log("plaersDB", playersDB);
+
+  client.send(
+    JSON.stringify({
+      type: "turn",
+      id: 0,
+      data: JSON.stringify({
+        currentPlayer: currentPlayerId,
+      }),
+    })
+  );
+};
+
+// send to both players in the room
 export const startGame = (room: IRoom, wss: WebSocket.Server) => {
   console.log("room", room);
 
@@ -81,23 +99,59 @@ export const startGame = (room: IRoom, wss: WebSocket.Server) => {
             }),
           })
         );
-
-        turn(client, user.index);
+        // roomUsers[0] shoots first
+        const currentPlayer = playersDB[room.roomUsers[0].name].id;
+        turn(client, currentPlayer);
       }
     });
   });
 };
 
-// after game start and every attack, miss or kill result
-// send to all players in the room
-const turn = (client: IClientWebSocket, currentPlayerIndex: string) => {
-  client.send(
-    JSON.stringify({
-      type: "turn",
-      id: 0,
-      data: JSON.stringify({
-        currentPlayerIndex,
-      }),
-    })
-  );
+export const attack = (
+  wss: WebSocket.Server,
+  room: IRoom,
+  dataJson: string,
+  nextPlayerIndex: string
+) => {
+  // console.log("turn", client.playerId);
+  console.log("plaersDB", playersDB);
+
+  room.roomUsers.map((user) => {
+    wss.clients.forEach((client: IClientWebSocket) => {
+      if (
+        client.readyState === WebSocket.OPEN &&
+        client.playerName === user.name
+      ) {
+        client.send(
+          JSON.stringify({
+            type: "attack",
+            id: 0,
+            data: dataJson,
+          })
+        );
+        turn(client, nextPlayerIndex);
+      }
+    });
+  });
+};
+
+export const finish = (room: IRoom, wss: WebSocket.Server) => {
+  room.roomUsers.map((user) => {
+    wss.clients.forEach((client: IClientWebSocket) => {
+      if (
+        client.readyState === WebSocket.OPEN &&
+        client.playerName === user.name
+      ) {
+        client.send(
+          JSON.stringify({
+            type: "finish",
+            id: 0,
+            data: JSON.stringify({
+              winPlayer: "" /* id of the player in the current game session */,
+            }),
+          })
+        );
+      }
+    });
+  });
 };

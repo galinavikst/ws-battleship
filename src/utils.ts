@@ -1,4 +1,4 @@
-import { IRoom } from "./types";
+import { IRoom, IShip } from "./types";
 import playersDB from "./ws_server/db/players";
 import roomsDB from "./ws_server/db/rooms";
 

@@ -38,17 +38,18 @@ interface IPosition {
   x: number;
   y: number;
 }
-export interface IShips {
+export interface IShip {
   position: IPosition;
   direction: boolean;
   length: number;
+  hits: number;
   type: string; // "small"|"medium"|"large"|"huge",
 }
 
 export interface IRoomUser {
   name: string;
   index: string;
-  ships?: IShips[];
+  ships?: IShip[];
 }
 export interface IRoom {
   roomId: number | string;

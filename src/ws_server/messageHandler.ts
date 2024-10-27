@@ -1,6 +1,10 @@
 import WebSocket from "ws";
 import { handleLogin } from "./controlers/player/login.ts";
-import { handleAddShips, handleCreateRoom } from "./controlers/room.ts";
+import {
+  handleAddShips,
+  handleAttack,
+  handleCreateRoom,
+} from "./controlers/room.ts";
 import { handleAddPlayerToRoom } from "./controlers/room.ts";
 
 const messageHandler = (
@@ -28,7 +32,7 @@ const messageHandler = (
 
     case "attack":
       console.log("attack", notParsedMessageData);
-
+      handleAttack(ws, notParsedMessageData, wss);
       break;
 
     case "randomAttack":
