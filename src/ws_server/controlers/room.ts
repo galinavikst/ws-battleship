@@ -99,17 +99,18 @@ export const handleAttack = (
   wss: WebSocket.Server
 ) => {
   try {
-    const { gameId, x, y, indexPlayer } = JSON.parse(notParsedMessageData);
-
+    const {
+      gameId,
+      x: initX,
+      y: initY,
+      indexPlayer,
+    } = JSON.parse(notParsedMessageData);
     const room = (Object.values(roomsDB) as IRoom[]).find(
       (room) => room.idGame === gameId
     );
-
-    // find player ships
     const currentPlayer = room?.roomUsers.find(
       (player) => player.index === indexPlayer
     );
-
     const anotherPlayer = room?.roomUsers.find(
       (user) => user.index !== indexPlayer
     );
@@ -117,6 +118,11 @@ export const handleAttack = (
     let status: string = "miss";
     let nextPlayerIndex = anotherPlayerId; // change player if status keeps 'miss'
     let destroyedShip = {} as IShip;
+    const gridSize = 10;
+    const x =
+      initX === undefined ? Math.floor(Math.random() * gridSize) : initX;
+    const y =
+      initY === undefined ? Math.floor(Math.random() * gridSize) : initY;
 
     const isVerticalShoted = (
       shipStartX: number,

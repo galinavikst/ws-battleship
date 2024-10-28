@@ -4,6 +4,7 @@ import {
   handleAddShips,
   handleAttack,
   handleCreateRoom,
+  handleRandomAttack,
 } from "./controlers/room.ts";
 import { handleAddPlayerToRoom } from "./controlers/room.ts";
 
@@ -31,16 +32,10 @@ const messageHandler = (
       break;
 
     case "attack":
-      console.log("attack", notParsedMessageData);
+    case "randomAttack":
       handleAttack(notParsedMessageData, wss);
       break;
 
-    case "randomAttack":
-      console.log("randomAttack", notParsedMessageData);
-
-      break;
-
-    // Add other message types as needed
     default:
       console.log("Unknown message type:", messageType);
       break;
