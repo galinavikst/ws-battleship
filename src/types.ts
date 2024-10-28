@@ -34,7 +34,7 @@ export interface IRegOucoming {
   id: number;
 }
 
-interface IPosition {
+export interface IPosition {
   x: number;
   y: number;
 }

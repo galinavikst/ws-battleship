@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import {
   IClientWebSocket,
   IPlayer,
+  IPosition,
   IRoom,
   IRoomUser,
   IShip,
@@ -15,8 +16,10 @@ import {
   startGame,
   attack,
   finish,
+  turn,
 } from "../messageSender";
 import playersDB from "../db/players";
+import { getPositionsAround } from "../../utils";
 
 export const handleCreateRoom = (
   ws: IClientWebSocket,
@@ -60,7 +63,6 @@ export const handleAddPlayerToRoom = (
 };
 
 export const handleAddShips = (
-  ws: IClientWebSocket,
   notParsedMessageData: string,
   wss: WebSocket.Server
 ) => {
@@ -68,12 +70,14 @@ export const handleAddShips = (
     const { gameId, ships, indexPlayer } = JSON.parse(notParsedMessageData);
     const extendedShips = ships.map((ship: IShip) => ({ ...ship, hits: 0 }));
 
-    const roomId = Object.keys(roomsDB).find(
-      (key) => roomsDB[key].idGame === gameId
+    const room = (Object.values(roomsDB) as IRoom[]).find(
+      (room) => room.idGame === gameId
     );
+    const roomId = room?.roomId;
 
-    const updatedRoomUsers = roomsDB[roomId as string].roomUsers.map((user) =>
-      user.index === indexPlayer ? { ...user, ships: extendedShips } : user
+    const updatedRoomUsers = roomsDB[roomId as string].roomUsers.map(
+      (user: IRoomUser) =>
+        user.index === indexPlayer ? { ...user, ships: extendedShips } : user
     );
 
     roomsDB[roomId as string].roomUsers = updatedRoomUsers;
@@ -83,7 +87,6 @@ export const handleAddShips = (
     );
 
     if (isAllPositionsSent) {
-      console.log("ready");
       startGame(roomsDB[roomId as string], wss);
     }
   } catch (error) {
@@ -92,7 +95,6 @@ export const handleAddShips = (
 };
 
 export const handleAttack = (
-  ws: IClientWebSocket,
   notParsedMessageData: string,
   wss: WebSocket.Server
 ) => {
@@ -102,7 +104,6 @@ export const handleAttack = (
     const room = (Object.values(roomsDB) as IRoom[]).find(
       (room) => room.idGame === gameId
     );
-    console.log("room", room);
 
     // find player ships
     const currentPlayer = room?.roomUsers.find(
@@ -112,24 +113,17 @@ export const handleAttack = (
     const anotherPlayer = room?.roomUsers.find(
       (user) => user.index !== indexPlayer
     );
-    const anotherPlayerId = (Object.values(playersDB) as IPlayer[]).find(
-      (player: IPlayer) => player.name === anotherPlayer?.name
-    )?.id;
-
+    const anotherPlayerId = playersDB[anotherPlayer?.name as string].id;
     let status: string = "miss";
-    let nextPlayerIndex = anotherPlayerId; // change player if status 'miss'
+    let nextPlayerIndex = anotherPlayerId; // change player if status keeps 'miss'
+    let destroyedShip = {} as IShip;
 
     const isVerticalShoted = (
       shipStartX: number,
       shipStartY: number,
       shipLength: number
     ) => {
-      if (
-        x === shipStartX &&
-        y >= shipStartY &&
-        y < shipStartY + shipLength
-        // (y === shipStartY || (y < shipStartY + shipLength && y > shipStartY))
-      )
+      if (x === shipStartX && y >= shipStartY && y < shipStartY + shipLength)
         return true;
       else return false;
     };
@@ -139,12 +133,7 @@ export const handleAttack = (
       shipStartY: number,
       shipLength: number
     ) => {
-      if (
-        y === shipStartY &&
-        x >= shipStartX &&
-        x < shipStartX + shipLength
-        //(x === shipStartX || (x < shipStartX + shipLength && x > shipStartX))
-      )
+      if (y === shipStartY && x >= shipStartX && x < shipStartX + shipLength)
         return true;
       else return false;
     };
@@ -166,6 +155,7 @@ export const handleAttack = (
         const updatedShip = { ...ship, hits: ship.hits + 1 };
         if (isShipDestroyed(updatedShip)) {
           status = "killed";
+          destroyedShip = ship;
         } else status = "shot";
         nextPlayerIndex = indexPlayer; // keep turn for current player
 
@@ -186,22 +176,39 @@ export const handleAttack = (
     );
     roomsDB[(room as IRoom).roomId].roomUsers = updatedRoomUsers;
 
+    // check if the game finished
+    if (filteredShips?.length === 0) {
+      playersDB[currentPlayer?.name as string].wins += 1;
+      finish(room as IRoom, wss, indexPlayer);
+      updateWinnersForAllClients(wss);
+    }
+
     const data = JSON.stringify({
       position: { x, y },
       currentPlayer: indexPlayer,
       status,
     });
 
-    console.log(data);
-
-    attack(wss, room as IRoom, data, nextPlayerIndex as string);
-
     // after kill sent miss for all cells around ship too  // but keep current player
+    if (status === "killed") {
+      attack(wss, room as IRoom, data);
 
-    if (filteredShips?.length === 0) {
-      playersDB[indexPlayer as string].wins += 1;
-      finish(room as IRoom, wss);
-      updateWinnersForAllClients(wss);
+      const positionsAround: IPosition[] = getPositionsAround(destroyedShip);
+      console.log("killed:", positionsAround, destroyedShip);
+
+      for (let position of positionsAround) {
+        const data = JSON.stringify({
+          position,
+          currentPlayer: indexPlayer,
+          status: "miss",
+        });
+        attack(wss, room as IRoom, data);
+      }
+
+      turn(indexPlayer, room as IRoom, wss);
+    } else {
+      attack(wss, room as IRoom, data);
+      turn(nextPlayerIndex, room as IRoom, wss);
     }
   } catch (error) {
     console.log("error parsing data in handleAttack", error);

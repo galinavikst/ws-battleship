@@ -27,12 +27,12 @@ const messageHandler = (
       break;
 
     case "add_ships":
-      handleAddShips(ws, notParsedMessageData, wss);
+      handleAddShips(notParsedMessageData, wss);
       break;
 
     case "attack":
       console.log("attack", notParsedMessageData);
-      handleAttack(ws, notParsedMessageData, wss);
+      handleAttack(notParsedMessageData, wss);
       break;
 
     case "randomAttack":
