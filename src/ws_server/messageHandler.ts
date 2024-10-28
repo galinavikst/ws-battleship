@@ -4,7 +4,6 @@ import {
   handleAddShips,
   handleAttack,
   handleCreateRoom,
-  handleRandomAttack,
 } from "./controlers/room.ts";
 import { handleAddPlayerToRoom } from "./controlers/room.ts";
 

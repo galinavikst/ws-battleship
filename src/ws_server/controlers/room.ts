@@ -26,7 +26,6 @@ export const handleCreateRoom = (
   wss: WebSocket.Server
 ) => {
   // add new room to db and add user there
-  // Player room data (players, game board, ships positions) storages in the server
   const id = crypto.randomUUID();
   roomsDB[id] = {
     roomId: id,
@@ -37,7 +36,6 @@ export const handleCreateRoom = (
       },
     ],
   };
-  console.log("Current roomsDB:", roomsDB);
 
   updateRoomForAllClients(wss);
   updateWinnersForAllClients(wss);
@@ -69,12 +67,10 @@ export const handleAddShips = (
   try {
     const { gameId, ships, indexPlayer } = JSON.parse(notParsedMessageData);
     const extendedShips = ships.map((ship: IShip) => ({ ...ship, hits: 0 }));
-
     const room = (Object.values(roomsDB) as IRoom[]).find(
       (room) => room.idGame === gameId
     );
     const roomId = room?.roomId;
-
     const updatedRoomUsers = roomsDB[roomId as string].roomUsers.map(
       (user: IRoomUser) =>
         user.index === indexPlayer ? { ...user, ships: extendedShips } : user
@@ -200,8 +196,6 @@ export const handleAttack = (
       attack(wss, room as IRoom, data);
 
       const positionsAround: IPosition[] = getPositionsAround(destroyedShip);
-      console.log("killed:", positionsAround, destroyedShip);
-
       for (let position of positionsAround) {
         const data = JSON.stringify({
           position,
